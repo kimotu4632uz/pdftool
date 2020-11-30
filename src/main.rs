@@ -1,25 +1,30 @@
 use clap::clap_app;
 use itertools::Itertools;
-
 use lopdf::{Object, ObjectId, Document};
+
+use pdftool::img2pdf::Pdf;
 
 fn main() -> anyhow::Result<()> {
     let matches = clap_app!(pdftool =>
-        (@arg input: * "input file")
+        (@arg input: -i --input [FILE] "input file")
         (@arg output: -o --output [FILE] "set output file to FILE")
         (@arg alink: -l --("add-link") [LINK] [PAGE] "add LINK to PAGE")
-        (@arg aimage: -i --("add-image") [FILE]... "add FILE to pdf")
+        (@arg aimage: -p --("add-image") [FILE]... "add FILE to pdf")
         (@arg rlink: -L --("remove-link") [PAGE]... "remove link of PAGE")
         (@arg rimg: -I --("remove-page") [PAGE]... "remove PAGE")
         (@arg mlink: -m --("move-link") [FROM] [TO] "move link from FROM to TO")
         (@arg mpage: -M --("move-page") [FROM] [TO] "move page from FROM to TO")
-        (@arg prune: -p --prune "prune unused object and renumber")
+        (@arg prune: -P --prune "prune unused object and renumber")
     ).get_matches();
 
-    let input = matches.value_of("input").unwrap();
-    let output = matches.value_of("output").unwrap_or(input);
+    let mut pdf: Pdf = if let Some(input) = matches.value_of("input") {
+        Document::load(input)?.into()
+    } else {
+        Pdf::new()
+    };
 
-    let mut pdf: pdftool::img2pdf::Pdf = lopdf::Document::load(input)?.into();
+    let output = matches.value_of("output").or(matches.value_of("input")).expect("Error: both input and output file not provided");
+
     let pages = pdf.pdf.get_pages();
 
     if let Some(vec) = matches.values_of("alink") {
