@@ -5,7 +5,7 @@ use lopdf::{Object, ObjectId, Document};
 use pdftool::img2pdf::Pdf;
 
 fn main() -> anyhow::Result<()> {
-    let matches = clap_app!(pdftool =>
+    let mut app = clap_app!(pdftool =>
         (@arg input: -i --input [FILE] "input file")
         (@arg output: -o --output [FILE] "set output file to FILE")
         (@arg alink: -l --("add-link") [LINK] [PAGE] "add LINK to PAGE")
@@ -15,7 +15,14 @@ fn main() -> anyhow::Result<()> {
         (@arg mlink: -m --("move-link") [FROM] [TO] "move link from FROM to TO")
         (@arg mpage: -M --("move-page") [FROM] [TO] "move page from FROM to TO")
         (@arg prune: -P --prune "prune unused object and renumber")
-    ).get_matches();
+    );
+
+    if std::env::args().len() == 1 {
+        app.print_help()?;
+        return Ok(())
+    }
+    
+    let matches = app.get_matches();
 
     let mut pdf: Pdf = if let Some(input) = matches.value_of("input") {
         Document::load(input)?.into()
