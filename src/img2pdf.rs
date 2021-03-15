@@ -52,8 +52,25 @@ impl Pdf {
     }
 
     pub fn set_author(&mut self, author: &str) -> anyhow::Result<()> {
-        let info = self.pdf.trailer.get_mut(b"Info").and_then(Object::as_dict_mut)?;
-        info.set("Author", Object::string_literal(author));
+        let author_iter = author.encode_utf16();
+
+        let mut utfbe_str: Vec<u8> = Vec::with_capacity((author_iter.count() + 1) * 2);
+        utfbe_str.push(0xfe);
+        utfbe_str.push(0xff);
+
+        for byte in author.encode_utf16() {
+            let u8_2 = byte.to_be_bytes();
+            utfbe_str.push(u8_2[0]);
+            utfbe_str.push(u8_2[1]);
+        }
+
+        let info = self.pdf.trailer.get(b"Info").and_then(Object::as_reference)?;
+
+        self.pdf
+            .get_object_mut(info)
+            .and_then(Object::as_dict_mut)?
+            .set("Author", Object::String(utfbe_str, StringFormat::Hexadecimal));
+
         Ok(())
     }
 
