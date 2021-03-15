@@ -6,15 +6,16 @@ use pdftool::img2pdf::Pdf;
 
 fn main() -> anyhow::Result<()> {
     let mut app = clap_app!(pdftool =>
-        (@arg input: -i --input [FILE] "input file")
-        (@arg output: -o --output [FILE] "set output file to FILE")
-        (@arg alink: -l --("add-link") [LINK] [PAGE] "add LINK to PAGE")
-        (@arg aimage: -p --("add-image") [FILE]... "add FILE to pdf")
-        (@arg rlink: -L --("remove-link") [PAGE]... "remove link of PAGE")
-        (@arg rimg: -I --("remove-page") [PAGE]... "remove PAGE")
-        (@arg mlink: -m --("move-link") [FROM] [TO] "move link from FROM to TO")
-        (@arg mpage: -M --("move-page") [FROM] [TO] "move page from FROM to TO")
-        (@arg prune: -P --prune "prune unused object and renumber")
+        (@arg input: -i --input [FILE] "Set input file to FILE. if not defined, make new PDF document.")
+        (@arg output: -o --output [FILE] "Set output file to FILE. if not defined, overwrite input file.")
+        (@arg author: -a --("set-author") [STRING] "Set PDF author as STRING")
+        (@arg alink: -l --("add-link") [LINK] [PAGE] "Add LINK to PAGE")
+        (@arg aimage: -p --("add-image") [FILE]... "Add FILE to pdf")
+        (@arg rlink: -L --("remove-link") [PAGE]... "Remove link of PAGE")
+        (@arg rimg: -I --("remove-page") [PAGE]... "Remove PAGE")
+        (@arg mlink: -m --("move-link") [FROM] [TO] "Move link from FROM to TO")
+        (@arg mpage: -M --("move-page") [FROM] [TO] "Move page from FROM to TO")
+        (@arg prune: -P --prune "Prune unused object and renumber")
     );
 
     if std::env::args().len() == 1 {
@@ -34,7 +35,9 @@ fn main() -> anyhow::Result<()> {
 
     let pages = pdf.pdf.get_pages();
 
-    if let Some(vec) = matches.values_of("alink") {
+    if let Some(author) = matches.value_of("author") {
+        pdf.set_author(author)?;
+    } else if let Some(vec) = matches.values_of("alink") {
         let vec = vec.collect_vec();
         let link_str = vec[0];
         let page_num = vec[1].parse::<u32>().expect("Error: given page number isn't number");

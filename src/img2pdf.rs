@@ -51,6 +51,12 @@ impl Pdf {
         }
     }
 
+    pub fn set_author(&mut self, author: &str) -> anyhow::Result<()> {
+        let info = self.pdf.trailer.get_mut(b"Info").and_then(Object::as_dict_mut)?;
+        info.set("Author", Object::string_literal(author));
+        Ok(())
+    }
+
     pub fn add_page(&mut self, width: u32, height: u32) -> anyhow::Result<ObjectId> {
         let page_id = self.pdf.new_object_id();
         let contents_id = self.pdf.add_object(Stream::new(dictionary!{}, vec![]));
