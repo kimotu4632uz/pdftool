@@ -1,0 +1,52 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/rust
+{
+	"name": "Rust",
+
+  "build": {
+    "dockerfile": "./Dockerfile"
+  },
+  `
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	"features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": "false",
+      "configureZshAsDefaultShell": "false",
+      "installOhMyZsh": "false",
+      "upgradePackage": "true",
+    },
+    "ghcr.io/devcontainers/features/git:1": {
+      "version": "latest",
+      "ppa": "false",
+    },
+    "ghcr.io/kimotu4632uz/devcontainer-features/dotfiles:0.1.1": {
+      "repository": "https://github.com/kimotu4632uz/dotfiles.git",
+      "setupCmd": "~/dotfiles/setup.sh neovim"
+    },
+    "ghcr.io/kimotu4632uz/devcontainer-features/neovim:0": {
+      "version": "latest",
+      "setupCmd": "nvim --headless -c 'autocmd User PackerComplete quitall'; nvim --headless -c 'InstallLsp rust-analyzer'"
+    },
+    "ghcr.io/devcontainers/features/rust:1": "latest",
+  },
+
+  "overrideFeatureInstallOrder": [
+    "ghcr.io/devcontainers/features/common-utils",
+    "ghcr.io/devcontainers/features/git",
+    "ghcr.io/kimotu4632uz/devcontainer-features/dotfiles",
+    "ghcr.io/kimotu4632uz/devcontainer-features/neovim",
+    "ghcr.io/devcontainers/features/rust"
+  ],
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// "forwardPorts": [],
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// "postCreateCommand": "rustc --version",
+
+	// Configure tool-specific properties.
+	// "customizations": {},
+
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	// "remoteUser": "root"
+}

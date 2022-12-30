@@ -11,7 +11,7 @@ pub struct PngInfo {
 }
 
 fn read_be_u32(input: &[u8], pos: usize) -> u32 {
-    u32::from_be_bytes(input[pos..pos+4].try_into().expect("not enough byte"))
+    u32::from_be_bytes(input[pos..pos + 4].try_into().expect("not enough byte"))
 }
 
 pub fn get_info(bytes: &[u8]) -> anyhow::Result<PngInfo> {
@@ -31,24 +31,35 @@ pub fn get_info(bytes: &[u8]) -> anyhow::Result<PngInfo> {
 
     loop {
         let size = read_be_u32(bytes, pos);
-        let name = std::str::from_utf8(&bytes[pos+4..pos+8])?;
+        let name = std::str::from_utf8(&bytes[pos + 4..pos + 8])?;
 
         match name {
             "PLTE" => {
-                palette = Some((bytes[pos+8..pos+8+(size as usize)].into(), size / 3));
+                palette = Some((bytes[pos + 8..pos + 8 + (size as usize)].into(), size / 3));
                 pos += 8 + size as usize + 4;
-            },
+            }
             "iCCP" => {
-                let icc_start = bytes[pos+8..pos+8+(size as usize)].into_iter().position(|&x| x == b'\x00');
-                icc = icc_start.map(|start| bytes[pos+8+start+1..pos+8+(size as usize)].into());
+                let icc_start = bytes[pos + 8..pos + 8 + (size as usize)]
+                    .into_iter()
+                    .position(|&x| x == b'\x00');
+                icc = icc_start
+                    .map(|start| bytes[pos + 8 + start + 1..pos + 8 + (size as usize)].into());
                 pos += 8 + size as usize + 4;
-            },
+            }
             "IDAT" => break,
             _ => pos += 8 + size as usize + 4,
         }
     }
 
-    Ok(PngInfo{ width, height, depth, color_type, interlace, palette, icc })
+    Ok(PngInfo {
+        width,
+        height,
+        depth,
+        color_type,
+        interlace,
+        palette,
+        icc,
+    })
 }
 
 pub fn get_idat(bytes: &[u8]) -> anyhow::Result<Vec<u8>> {
@@ -57,13 +68,13 @@ pub fn get_idat(bytes: &[u8]) -> anyhow::Result<Vec<u8>> {
 
     loop {
         let size = read_be_u32(bytes, pos);
-        let name = std::str::from_utf8(&bytes[pos+4..pos+8])?;
-        
+        let name = std::str::from_utf8(&bytes[pos + 4..pos + 8])?;
+
         match name {
             "IDAT" => {
-                result.push(&bytes[pos+8..pos+8+(size as usize)]);
+                result.push(&bytes[pos + 8..pos + 8 + (size as usize)]);
                 pos += 8 + size as usize + 4;
-            },
+            }
             "IEND" => break,
             _ => pos += 8 + size as usize + 4,
         }

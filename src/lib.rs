@@ -1,2 +1,4 @@
-pub mod img2pdf;
+pub mod pdf;
+pub use pdf::Pdf;
+
 pub mod png;
